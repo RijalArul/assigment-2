@@ -2,13 +2,11 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Order struct {
-	gorm.Model
-	CustomerName string `gorm:"type:varchar(255);not null;unique"`
+	ID           uint   `gorm:"primarykey"`
+	CustomerName string `gorm:"type:varchar(255);not null;unique" json:"customer_name"`
 	OrderedAt    time.Time
-	Items        []Item
+	Items        []Item `json:"items,omitempty"`
 }

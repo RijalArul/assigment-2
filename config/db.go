@@ -20,8 +20,7 @@ func StartDB() {
 		panic(err)
 	}
 
-	DB.AutoMigrate(&models.Item{})
-	DB.AutoMigrate(&models.Order{})
+	DB.AutoMigrate(&models.Order{}, &models.Item{})
 
 }
 

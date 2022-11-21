@@ -1,11 +1,9 @@
 package models
 
-import "gorm.io/gorm"
-
 type Item struct {
-	gorm.Model
-	ItemCode    string `gorm:"type:varchar(255);not null"`
-	Description string `gorm:"type:varchar(255);not null"`
-	Quantity    int    `gorm:"default:1;not_null;"`
-	OrderID     int
+	ID          uint   `gorm:"primarykey"`
+	ItemCode    string `gorm:"type:varchar(255);not null" json:"item_code"`
+	Description string `gorm:"type:varchar(255);not null" json:"desc"`
+	Quantity    int    `gorm:"not null" json:"quantity"`
+	OrderID     int    `json:"-"`
 }
