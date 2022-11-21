@@ -44,75 +44,8 @@ func CreateOrder(ctx *gin.Context) {
 			"orderedAt":    order.OrderedAt,
 		})
 	}
-	// } else {
-	// 	var RespCodeSuccess []map[string]interface{}
-	// 	RespCodeSuccess = []map[string]interface{}{
-	// 		{
-	// 			"itemCode": payloadItem.ItemCode,
-	// 			"desc":     payloadItem.Description,
-	// 			"quantity": payloadItem.Quantity,
-	// 		},
-	// 	}
-	// 	ctx.JSON(http.StatusCreated, gin.H{
-	// 		"orderedAt":    payloadOrder.OrderedAt,
-	// 		"customerName": payloadOrder.CustomerName,
-	// 		"items":        RespCodeSuccess,
-	// 	})
-	// }
 
 	tx.Commit()
-	// DB := config.GetDB()
-	// var errTx error
-	// tx := DB.Begin()
-	// currentTime := time.Now()
-
-	// customer_name, item_code, desc, quantity := ctx.PostForm("customer_name"), ctx.PostForm("item_code"), ctx.PostForm("desc"), ctx.PostForm("quantity")
-	// quantityParse, _ := strconv.ParseUint(quantity, 10, 32)
-	// payloadOrder := &models.Order{
-	// 	CustomerName: customer_name,
-	// 	OrderedAt:    currentTime,
-	// }
-
-	// if err := tx.Create(&payloadOrder).Error; err != nil {
-	// 	errTx = err
-
-	// }
-
-	// payloadItem := &models.Item{
-	// 	ItemCode:    item_code,
-	// 	Description: desc,
-	// 	Quantity:    int(quantityParse),
-	// 	OrderID:     int(payloadOrder.ID),
-	// }
-
-	// if err := tx.Create(&payloadItem).Error; err != nil {
-	// 	errTx = err
-	// 	// tx.Rollback()
-	// }
-
-	// if errTx != nil {
-	// 	ctx.JSON(400, gin.H{
-	// 		"message": "Failed Create",
-	// 		"err":     errTx,
-	// 	})
-	// 	tx.Rollback()
-	// } else {
-	// 	var RespCodeSuccess []map[string]interface{}
-	// 	RespCodeSuccess = []map[string]interface{}{
-	// 		{
-	// 			"itemCode": payloadItem.ItemCode,
-	// 			"desc":     payloadItem.Description,
-	// 			"quantity": payloadItem.Quantity,
-	// 		},
-	// 	}
-	// 	ctx.JSON(http.StatusCreated, gin.H{
-	// 		"orderedAt":    payloadOrder.OrderedAt,
-	// 		"customerName": payloadOrder.CustomerName,
-	// 		"items":        RespCodeSuccess,
-	// 	})
-	// }
-
-	// tx.Commit()
 
 }
 
