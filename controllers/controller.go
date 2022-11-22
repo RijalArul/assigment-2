@@ -5,10 +5,10 @@ import (
 	"assigment-2/models"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm/clause"
 )
 
 func CreateOrder(ctx *gin.Context) {
@@ -94,41 +94,30 @@ func GetOrderByID(ctx *gin.Context) {
 }
 
 func UpdateOrder(ctx *gin.Context) {
+	db := config.GetDB()
 	orderId := ctx.Param("orderId")
-	customer_name, item_code, desc, quantity := ctx.PostForm("customer_name"), ctx.PostForm("item_code"), ctx.PostForm("desc"), ctx.PostForm("quantity")
-	quantityParse, _ := strconv.ParseUint(quantity, 10, 32)
-	currentTime := time.Now()
-	var errMsg error
 	order := models.Order{}
-	item := models.Item{}
+	err := db.First(&order, "id = ?", orderId).Error
 
-	if err := config.GetDB().Model(&order).Where("id = ?", orderId).Updates(&models.Order{CustomerName: customer_name, OrderedAt: currentTime}).First(&order).Error; err != nil {
-		errMsg = err
-	}
-	config.GetDB().Model(&item).Where("items.order_id", orderId).Updates(&models.Item{ItemCode: item_code, Description: desc, Quantity: int(quantityParse)}).First(&item)
-
-	if errMsg != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"error":   "Not Found",
-			"message": errMsg,
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "request not found",
+			"message": err.Error(),
 		})
-	} else {
-		itemsUpdate := []map[string]interface{}{
-			{
-				"lineItemId":  item.ID,
-				"itemCode":    item.ItemCode,
-				"description": item.Description,
-				"quantity":    item.Quantity,
-			},
-		}
-
-		ctx.JSON(http.StatusOK, gin.H{
-			"orderId":      order.ID,
-			"customerName": order.CustomerName,
-			"orderedAt":    order.OrderedAt,
-			"items":        itemsUpdate,
-		})
+		return
 	}
+
+	if err := ctx.ShouldBindJSON(&order); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	db.Clauses(clause.OnConflict{
+		DoUpdates: clause.AssignmentColumns([]string{"item_code", "description", "quantity"}),
+	}).Where("orderid = ?", orderId).Create(&order.Items)
+
+	ctx.JSON(200, gin.H{
+		"data": order,
+	})
 }
 
 func DeleteOrder(ctx *gin.Context) {
