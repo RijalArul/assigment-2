@@ -70,25 +70,11 @@ func GetOrderByID(ctx *gin.Context) {
 		return
 	}
 
-	var responseItem []map[string]interface{}
-
-	for i := 0; i < len(order.Items); i++ {
-		responseItem = []map[string]interface{}{
-			{
-				"itemCode":    order.Items[i].ItemCode,
-				"description": order.Items[i].Description,
-				"quantity":    order.Items[i].Quantity,
-			},
-		}
-	}
-
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Success Found Product",
-		"order": map[string]interface{}{
-			"customerName": order.CustomerName,
-			"orderedAt":    order.OrderedAt,
-			"items":        responseItem,
-		},
+		"message":      "Success Found Product",
+		"orderedAt":    order.OrderedAt,
+		"items":        order.Items,
+		"customerName": order.CustomerName,
 	})
 
 }
@@ -96,7 +82,10 @@ func GetOrderByID(ctx *gin.Context) {
 func UpdateOrder(ctx *gin.Context) {
 	db := config.GetDB()
 	orderId := ctx.Param("orderId")
-	order := models.Order{}
+	currentTime := time.Now()
+	order := models.Order{
+		OrderedAt: currentTime,
+	}
 	err := db.First(&order, "id = ?", orderId).Error
 
 	if err != nil {
@@ -112,11 +101,17 @@ func UpdateOrder(ctx *gin.Context) {
 	}
 
 	db.Clauses(clause.OnConflict{
+		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}),
+	}).Where("orderid = ?", orderId).Create(&order)
+
+	db.Clauses(clause.OnConflict{
 		DoUpdates: clause.AssignmentColumns([]string{"item_code", "description", "quantity"}),
 	}).Where("orderid = ?", orderId).Create(&order.Items)
 
 	ctx.JSON(200, gin.H{
-		"data": order,
+		"customerName": order.CustomerName,
+		"items":        order.Items,
+		"orderedAt":    order.OrderedAt,
 	})
 }
 
