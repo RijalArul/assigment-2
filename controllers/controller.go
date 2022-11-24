@@ -5,7 +5,6 @@ import (
 	"assigment-2/models"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
@@ -17,9 +16,7 @@ func CreateOrder(ctx *gin.Context) {
 	var errTx error
 	tx := DB.Begin()
 	decoder := json.NewDecoder(ctx.Request.Body)
-	order = models.Order{
-		OrderedAt: time.Now(),
-	}
+	order = models.Order{}
 	err := decoder.Decode(&order)
 
 	if err != nil {
@@ -82,10 +79,8 @@ func GetOrderByID(ctx *gin.Context) {
 func UpdateOrder(ctx *gin.Context) {
 	db := config.GetDB()
 	orderId := ctx.Param("orderId")
-	currentTime := time.Now()
-	order := models.Order{
-		OrderedAt: currentTime,
-	}
+	// currentTime := time.Now()
+	order := models.Order{}
 	err := db.First(&order, "id = ?", orderId).Error
 
 	if err != nil {
@@ -101,12 +96,19 @@ func UpdateOrder(ctx *gin.Context) {
 	}
 
 	db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"customer_name"}),
-	}).Where("orderid = ?", orderId).Create(&order)
+	}).Updates(&order)
 
 	db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"item_code", "description", "quantity"}),
-	}).Where("orderid = ?", orderId).Create(&order.Items)
+	}).Create(&order.Items)
+
+	// db.Clauses(clause.OnConflict{
+	// 	Columns: []clause.Column{{Name: "id"}},
+	// 	DoNothing: true,
+	// }).Create(&orderItem.Items)
 
 	ctx.JSON(200, gin.H{
 		"customerName": order.CustomerName,
